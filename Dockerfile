@@ -1,20 +1,18 @@
-# Base image
-FROM python:3.8-slim
+FROM python:3.8-alpine
 
-# Install dependencies
-RUN apt-get update && apt-get install -y git
-RUN pip install torch torchvision torchaudio
-RUN pip install dalle-pytorch min-dalle flask
+# Install only the necessary packages
+RUN apk add --no-cache gcc g++ make libffi-dev musl-dev linux-headers
 
-# Clone the repository
-RUN git clone https://github.com/kuprel/min-dalle.git
-WORKDIR /min-dalle
+# Install Python dependencies
+RUN pip install torch torchvision torchaudio flask
 
-# Create an API using Flask
-COPY app.py /min-dalle/
+# Clone only the necessary files from the min-dalle repo
+WORKDIR /app
+RUN git clone --depth 1 https://github.com/kuprel/min-dalle.git
+WORKDIR /app/min-dalle
 
-# Expose port
+# Copy the Flask app
+COPY app.py /app/min-dalle/
+
 EXPOSE 5000
-
-# Run the app
 CMD ["python", "app.py"]
